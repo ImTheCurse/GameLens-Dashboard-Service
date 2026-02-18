@@ -1,0 +1,81 @@
+tags:
+  - Runs
+summary: Insert a new run summary
+description: Adds a detailed record of a game run into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - game_id
+        - run_id
+        - started_at
+        - result
+      properties:
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        run_id:
+          type: string
+          example: "RUN-98765"
+          description: Unique identifier for the specific run.
+        started_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:00:00Z"
+          description: Timestamp when the run began.
+        result:
+          type: string
+          example: "win"
+          description: Outcome of the run (e.g., win , loss, quit).
+        ended_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:45:00Z"
+          description: Timestamp when the run ended.
+        duration_ms:
+          type: integer
+          example: 2700000
+          description: Total duration of the run in milliseconds.
+        final_stage_id:
+          type: string
+          example: "stage_03"
+          description: ID of the last stage reached.
+        final_stage_index:
+          type: integer
+          example: 3
+        final_room_index:
+          type: integer
+          example: 12
+        total_damage_taken:
+          type: integer
+          example: 70
+        choice_count:
+          type: integer
+          example: 4
+responses:
+  200:
+    description: Runs inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Runs inserted successfully"
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "duplicate key value violates unique constraint..."
+        type:
+          type: string
+          example: "UniqueViolation"
