@@ -1,0 +1,71 @@
+tags:
+  - Stage
+summary: Insert stage
+description: Adds a stage record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - stage_id
+        - game_id
+        - name_norm
+        - first_seen_at
+        - last_seen_at
+      properties:
+        stage_id:
+          type: string
+          example: "STAGE-001"
+          description: Unique identifier for the stage.
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        stage_index:
+          type: integer
+          example: 1
+        name_norm:
+          type: string
+          example: "forest"
+          description: Normalized stage name.
+        canonical_name:
+          type: string
+          example: "Forest"
+        first_seen_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:00:00Z"
+        last_seen_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:45:00Z"
+        metadata:
+          type: object
+          example:
+            biome: "forest"
+            difficulty: "normal"
+responses:
+  200:
+    description: Stage inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Stage inserted successfully"
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "Missing parameter(s): stage_id"
+        type:
+          type: string
+          example: "Exception"

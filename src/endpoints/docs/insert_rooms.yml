@@ -1,0 +1,82 @@
+tags:
+  - Rooms
+summary: Insert room summary
+description: Adds a room summary record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - game_id
+        - run_id
+        - room_seq
+        - entered_at
+        - updated_at
+      properties:
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        run_id:
+          type: string
+          example: "RUN-98765"
+          description: Unique identifier for the run.
+        room_seq:
+          type: integer
+          example: 5
+          description: Sequential room number within the run.
+        entered_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:10:00Z"
+        stage_index:
+          type: integer
+          example: 2
+        stage_id:
+          type: string
+          example: "stage_02"
+        room_index:
+          type: integer
+          example: 7
+        room_name_norm:
+          type: string
+          example: "treasure_room"
+        exited_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:08:30Z"
+        completion_ms:
+          type: integer
+          example: 210000
+        damage_taken_in_room:
+          type: integer
+          example: 12
+responses:
+  200:
+    description: Rooms inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Rooms inserted successfully"
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "Missing parameter(s): game_id"
+        type:
+          type: string
+          example: "Exception"
