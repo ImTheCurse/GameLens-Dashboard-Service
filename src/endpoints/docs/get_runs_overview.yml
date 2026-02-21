@@ -1,0 +1,53 @@
+tags:
+  - Runs
+summary: Get runs overview
+description: Returns aggregated run stats filtered by game_id and game_version.
+parameters:
+  - in: query
+    name: game_id
+    required: true
+    type: string
+    description: Unique identifier for the game.
+    example: "G-12345"
+  - in: query
+    name: game_version
+    required: true
+    type: string
+    description: Version of the game client.
+    example: "1.2.3"
+responses:
+  200:
+    description: Runs overview retrieved successfully
+    schema:
+      type: object
+      properties:
+        total_runs:
+          type: integer
+          example: 1240
+        completions:
+          type: integer
+          example: 312
+        deaths:
+          type: integer
+          example: 801
+        quits:
+          type: integer
+          example: 127
+        avg_duration_ms:
+          type: number
+          format: float
+          example: 842312
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "game_id or game_version is required."
+        type:
+          type: string
+          example: "ValidationError"
