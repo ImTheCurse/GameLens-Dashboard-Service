@@ -92,6 +92,76 @@ def insert_rooms():
     return jsonify({"message": "Rooms inserted successfully"})
 
 
-# @Rooms.route("/rooms/progression", methods=["GET"])
-# def get_rooms():
-#     pass
+@Rooms.route("/rooms/progression", methods=["GET"])
+@swag_from("docs/get_rooms_progression.yml")
+def get_rooms_progression():
+    params = request.args
+
+    # Required params
+    game_id = params.get("game_id")
+    game_version = params.get("game_version")
+
+    validate_data(["game_id", "game_version"], params)
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        room_name_norm,
+                        COUNT(*) AS death_count
+                    FROM
+                        room_summary rs
+                    JOIN
+                        run r
+                    ON
+                        r.run_id = rs.run_id AND r.game_id = rs.game_id
+                    WHERE
+                        exited_at IS NULL
+                    AND
+                        r.game_id = %s
+                    AND
+                        game_version = %s
+                    GROUP BY
+                        room_name_norm
+                    ORDER BY
+                        death_count DESC
+                    ;
+                    """,
+                    (game_id, game_version),
+                )
+                row = cur.fetchone()
+
+                if not row:
+                    row = [None, None]
+
+                cur.execute(
+                    """
+                    SELECT
+                        room_name_norm AS room_entity_id,
+                        COUNT(*) AS runs_entered,
+                        COUNT(CASE WHEN exited_at IS NULL THEN 1 END) AS runs_ended_here,
+                        ROUND(COUNT(CASE WHEN exited_at IS NULL THEN 1 END)::numeric / COUNT(*), 2) AS death_rate
+                    FROM
+                        room_summary
+                    GROUP BY
+                        room_name_norm
+                    ORDER BY
+                        death_rate DESC,
+                        runs_ended_here DESC;
+                    """
+                )
+                room_survival_stats = cur.fetchall()
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify(
+        {
+            "deadliest_level_entity_id": row[0],
+            "total_deaths": row[1],
+            "room_survival_stats": room_survival_stats,
+        }
+    )

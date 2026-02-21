@@ -1,0 +1,53 @@
+tags:
+  - Rooms
+summary: Get rooms progression
+description: Returns room progression stats including deadliest room and survival stats.
+parameters:
+  - in: query
+    name: game_id
+    required: true
+    type: string
+    description: Unique identifier for the game.
+    example: "G-12345"
+  - in: query
+    name: game_version
+    required: true
+    type: string
+    description: Version of the game client.
+    example: "1.2.3"
+responses:
+  200:
+    description: Rooms progression retrieved successfully
+    schema:
+      type: object
+      properties:
+        deadliest_level_entity_id:
+          type: string
+          example: "boss_room"
+        total_deaths:
+          type: integer
+          example: 42
+        room_survival_stats:
+          type: array
+          items:
+            type: array
+            items:
+              type: object
+          description: Raw row tuples from the query (room_entity_id, runs_entered, runs_ended_here, death_rate).
+          example:
+            - ["treasure_room", 120, 15, 0.12]
+            - ["boss_room", 60, 20, 0.33]
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "Missing parameter(s): game_id"
+        type:
+          type: string
+          example: "Exception"
