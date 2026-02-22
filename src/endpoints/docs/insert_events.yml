@@ -1,0 +1,90 @@
+tags:
+  - Events
+summary: Insert a new event
+description: Adds a new event record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - game_id
+        - run_id
+        - occurred_at
+        - ingested_at
+        - event_type_id
+        - details
+      properties:
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        run_id:
+          type: string
+          example: "R-54321"
+          description: Unique identifier for the run.
+        occurred_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:00Z"
+          description: Timestamp when the event occurred.
+        ingested_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:01Z"
+          description: Timestamp when the event was ingested.
+        event_type_id:
+          type: integer
+          format: int64
+          example: 1
+          description: Foreign key to event_type.id.
+        source_capture_id:
+          type: string
+          example: "C-77777"
+          description: Optional capture ID that generated the event.
+        confidence:
+          type: number
+          format: float
+          example: 0.98
+          description: Confidence score for the event.
+        pipeline_version:
+          type: string
+          example: "pipeline-1.0"
+          description: Pipeline version that generated the event.
+        model_version:
+          type: string
+          example: "model-2.1"
+          description: Model version that generated the event.
+        details:
+          type: object
+          example:
+            key: "value"
+          description: JSON payload describing the event.
+responses:
+  200:
+    description: Event inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Event inserted successfully"
+        event_id:
+          type: integer
+          format: int32
+          example: 12345
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "duplicate key value violates unique constraint..."
+        type:
+          type: string
+          example: "UniqueViolation"

@@ -8,6 +8,7 @@ from flasgger import Swagger
 from flask import Flask
 
 from src.db import DatabaseConnection
+from src.endpoints.events import Events
 from src.endpoints.rooms import Rooms
 from src.endpoints.runs import Runs
 from src.endpoints.stage import Stage
@@ -17,6 +18,7 @@ swagger = Swagger(app)
 app.register_blueprint(Runs, url_prefix="/api/v1/dashboard/runs")
 app.register_blueprint(Rooms, url_prefix="/api/v1/dashboard/rooms")
 app.register_blueprint(Stage, url_prefix="/api/v1/dashboard/stage")
+app.register_blueprint(Events, url_prefix="/api/v1/dashboard/events")
 conn_str = os.environ.get("PGSQL_CONN")
 if not conn_str:
     raise ValueError("PGSQL_CONN environment variable is not set")
