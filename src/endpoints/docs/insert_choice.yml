@@ -1,0 +1,98 @@
+tags:
+  - Choices
+summary: Insert a new choice
+description: Adds a new choice_fact record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - game_id
+        - event_id
+        - run_id
+        - occurred_at
+        - selected_upgrade_id
+        - updated_at
+      properties:
+        event_id:
+          type: integer
+          format: int32
+          example: 3
+          description: "foreign key to event."
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        run_id:
+          type: string
+          example: "R-54321"
+          description: Unique identifier for the run.
+        occurred_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:00Z"
+          description: Timestamp when the choice occurred.
+        stage_index:
+          type: integer
+          format: int32
+          example: 2
+          description: Optional stage index within the run.
+        stage_id:
+          type: string
+          example: "S-001"
+          description: Optional stage ID.
+        room_index:
+          type: integer
+          format: int32
+          example: 3
+          description: Optional room index within the stage.
+        choice_context:
+          type: string
+          example: "upgrade"
+          description: Context of the choice (e.g., upgrade, reward, shop, event).
+        selected_upgrade_id:
+          type: string
+          example: "U-98765"
+          description: Upgrade selected by the player.
+        options_present:
+          type: object
+          example:
+            options:
+              - "U-98765"
+              - "U-12345"
+              - "U-54321"
+          description: Optional list of upgrade IDs offered.
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:02Z"
+          description: Timestamp when the record was updated.
+responses:
+  200:
+    description: Choice inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Choice inserted successfully"
+        choice_fact_id:
+          type: integer
+          format: int32
+          example: 12345
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "duplicate key value violates unique constraint..."
+        type:
+          type: string
+          example: "UniqueViolation"

@@ -93,3 +93,96 @@ def insert_event():
         ), 400
 
     return jsonify({"message": "Event inserted successfully", "event_id": event_id})
+
+
+@Events.route("/choices/insert", methods=["POST"])
+@swag_from("docs/insert_choice.yml")
+def insert_choice():
+    data = request.get_json() or {}
+
+    # Required Params
+    game_id = data.get("game_id")
+    event_id = data.get("event_id")
+    run_id = data.get("run_id")
+    occurred_at = data.get("occurred_at")
+    selected_upgrade_id = data.get("selected_upgrade_id")
+    updated_at = data.get("updated_at")
+
+    validate_data(
+        [
+            "game_id",
+            "event_id",
+            "run_id",
+            "occurred_at",
+            "selected_upgrade_id",
+            "updated_at",
+        ],
+        data,
+    )
+    # Optional Params
+    stage_index = data.get("stage_index")
+    stage_id = data.get("stage_id")
+    room_index = data.get("room_index")
+    choice_context = data.get("choice_context")
+    options_present = data.get("options_present")
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO choice_fact
+                    (
+                        game_id,
+                        run_id,
+                        event_id,
+                        occurred_at,
+                        stage_index,
+                        stage_id,
+                        room_index,
+                        choice_context,
+                        selected_upgrade_id,
+                        options_present,
+                        updated_at
+                    )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                    RETURNING choice_fact_id;
+                    ;
+                    """,
+                    (
+                        game_id,
+                        run_id,
+                        event_id,
+                        occurred_at,
+                        stage_index,
+                        stage_id,
+                        room_index,
+                        choice_context,
+                        selected_upgrade_id,
+                        Json(options_present),
+                        updated_at,
+                    ),
+                )
+                choice_fact_id = int(cur.fetchone()[0])
+                conn.commit()
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify(
+        {"message": "Choice inserted successfully", "choice_fact_id": choice_fact_id}
+    )
