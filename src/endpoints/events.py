@@ -186,3 +186,66 @@ def insert_choice():
     return jsonify(
         {"message": "Choice inserted successfully", "choice_fact_id": choice_fact_id}
     )
+
+
+@Events.route("/choices", methods=["GET"])
+@swag_from("docs/get_choices.yml")
+def get_choices_stats():
+    data = request.args
+    # Required Params
+    game_id = data.get("game_id")
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        cf.selected_upgrade_id as choice_name,
+                        cf.options_present::jsonb AS items,
+                        COUNT(*) AS total_picks,
+                        SUM(CASE WHEN r.end_reason = 'win' THEN 1 ELSE 0 END) AS total_wins,
+                        ROUND(
+                            SUM(CASE WHEN r.end_reason = 'win' THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
+                            2
+                        ) AS win_rate_percentage,
+                        ROUND(
+                            AVG(EXTRACT(EPOCH FROM (r.ended_at - r.started_at)))::numeric,
+                            2
+                        ) AS avg_duration_sec
+                    FROM
+                        choice_fact cf
+                    JOIN
+                        run r
+                    ON
+                        cf.game_id = r.game_id AND r.run_id = cf.run_id
+                    WHERE
+                    r.game_id = %s
+                    GROUP BY
+                        cf.selected_upgrade_id,
+                        cf.options_present::jsonb
+                    ORDER BY
+                        cf.selected_upgrade_id,
+                        total_picks DESC;
+                    """,
+                    (game_id,),
+                )
+                rows = cur.fetchall()
+                choices_stats = [
+                    {
+                        "choice_name": row[0],
+                        "items": row[1],
+                        "total_picks": row[2],
+                        "total_wins": row[3],
+                        "win_rate_percentage": row[4],
+                        "avg_duration_sec": row[5],
+                    }
+                    for row in rows
+                ]
+
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify({"choices_stats": choices_stats}), 200

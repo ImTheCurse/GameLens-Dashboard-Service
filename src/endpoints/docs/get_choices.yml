@@ -1,0 +1,62 @@
+tags:
+  - Choices
+summary: Get aggregated choice statistics
+description: Returns aggregated choice stats (pick counts, win rates, and average run duration) for a given game.
+parameters:
+  - in: query
+    name: game_id
+    required: true
+    type: string
+    example: "G-12345"
+    description: Unique identifier for the game.
+responses:
+  200:
+    description: Choice statistics retrieved successfully
+    schema:
+      type: object
+      properties:
+        choices_stats:
+          type: array
+          items:
+            type: object
+            properties:
+              choice_name:
+                type: string
+                example: "U-98765"
+              items:
+                type: object
+                example:
+                  options:
+                    - "U-98765"
+                    - "U-12345"
+                    - "U-54321"
+              total_picks:
+                type: integer
+                format: int32
+                example: 120
+              total_wins:
+                type: integer
+                format: int32
+                example: 45
+              win_rate_percentage:
+                type: number
+                format: float
+                example: 37.5
+              avg_duration_sec:
+                type: number
+                format: float
+                example: 910.25
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "invalid input syntax for type uuid"
+        type:
+          type: string
+          example: "InvalidTextRepresentation"
