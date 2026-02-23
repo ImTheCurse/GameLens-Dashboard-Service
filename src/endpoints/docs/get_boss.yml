@@ -1,0 +1,56 @@
+tags:
+  - Bosses
+summary: Get boss events
+description: Returns boss encounter details for a given game and game version.
+parameters:
+  - in: query
+    name: game_id
+    required: true
+    type: string
+    example: "G-12345"
+    description: Unique identifier for the game.
+  - in: query
+    name: game_version
+    required: true
+    type: string
+    example: "1.0.5"
+    description: Game version identifier to filter runs.
+responses:
+  200:
+    description: Boss events retrieved successfully
+    schema:
+      type: object
+      properties:
+        boss_events:
+          type: array
+          items:
+            type: object
+            properties:
+              boss_name:
+                type: string
+                example: "Hydra"
+              duration_ms:
+                type: integer
+                format: int32
+                example: 150000
+              damage_taked_in_boss:
+                type: integer
+                format: int32
+                example: 120
+              defeated:
+                type: boolean
+                example: true
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "invalid input syntax for type uuid"
+        type:
+          type: string
+          example: "InvalidTextRepresentation"

@@ -372,3 +372,53 @@ def insert_boss_summary():
         ), 400
 
     return jsonify({"message": "Boss summary inserted successfully"}), 200
+
+
+@Events.route("/boss", methods=["GET"])
+@swag_from("docs/get_boss.yml")
+def get_bosses():
+    args = request.args
+
+    game_id = args.get("game_id")
+    game_version = args.get("game_version")
+
+    validate_data(["game_id", "game_version"], args)
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        boss_name,duration_ms,damage_taken_in_boss,defeated
+                    FROM
+                        boss_summary bs
+                    JOIN
+                      run r
+                    ON
+                      r.game_id = bs.game_id AND r.run_id = bs.run_id
+                    WHERE
+                        r.game_id = %s and r.game_version = %s;
+                    """,
+                    (game_id, game_version),
+                )
+                rows = cur.fetchall()
+
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify(
+        {
+            "boss_events": [
+                {
+                    "boss_name": row[0],
+                    "duration_ms": row[1],
+                    "damage_taked_in_boss": row[2],
+                    "defeated": row[3],
+                }
+                for row in rows
+            ]
+        }
+    ), 200
