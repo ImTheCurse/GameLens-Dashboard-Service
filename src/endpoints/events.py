@@ -191,10 +191,11 @@ def insert_choice():
 @Events.route("/choices", methods=["GET"])
 @swag_from("docs/get_choices.yml")
 def get_choices_stats():
-    data = request.args
+    args = request.args
     # Required Params
-    game_id = data.get("game_id")
-
+    game_id = args.get("game_id")
+    game_version = args.get("game_version")
+    validate_data(["game_id", "game_version"], args)
     try:
         with DatabaseConnection.get_connection() as conn:
             with conn.cursor() as cur:
@@ -220,7 +221,7 @@ def get_choices_stats():
                     ON
                         cf.game_id = r.game_id AND r.run_id = cf.run_id
                     WHERE
-                    r.game_id = %s
+                        r.game_id = %s AND r.game_version = %s
                     GROUP BY
                         cf.selected_upgrade_id,
                         cf.options_present::jsonb
@@ -228,17 +229,17 @@ def get_choices_stats():
                         cf.selected_upgrade_id,
                         total_picks DESC;
                     """,
-                    (game_id,),
+                    (game_id, game_version),
                 )
                 rows = cur.fetchall()
                 choices_stats = [
                     {
                         "choice_name": row[0],
                         "items": row[1],
-                        "total_picks": row[2],
-                        "total_wins": row[3],
-                        "win_rate_percentage": row[4],
-                        "avg_duration_sec": row[5],
+                        "total_picks": int(row[2]),
+                        "total_wins": int(row[3]),
+                        "win_rate_percentage": float(row[4]),
+                        "avg_duration_sec": float(row[5]),
                     }
                     for row in rows
                 ]

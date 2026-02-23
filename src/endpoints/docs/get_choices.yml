@@ -1,7 +1,7 @@
 tags:
   - Choices
 summary: Get aggregated choice statistics
-description: Returns aggregated choice stats (pick counts, win rates, and average run duration) for a given game.
+description: Returns aggregated choice stats as a list of JSON objects (pick counts, win rates, and average run duration) for a given game.
 parameters:
   - in: query
     name: game_id
@@ -9,6 +9,12 @@ parameters:
     type: string
     example: "G-12345"
     description: Unique identifier for the game.
+  - in: query
+    name: game_version
+    required: true
+    type: string
+    example: "1.2.3"
+    description: Game version identifier to filter runs.
 responses:
   200:
     description: Choice statistics retrieved successfully
@@ -22,14 +28,14 @@ responses:
             properties:
               choice_name:
                 type: string
-                example: "U-98765"
+                example: "Fire Sword"
               items:
                 type: object
                 example:
                   options:
-                    - "U-98765"
-                    - "U-12345"
-                    - "U-54321"
+                    - "Magic Ball"
+                    - "Fire Sword"
+                    - "Spoon"
               total_picks:
                 type: integer
                 format: int32
@@ -46,6 +52,28 @@ responses:
                 type: number
                 format: float
                 example: 910.25
+    examples:
+      application/json:
+        choices_stats:
+          - choice_name: "Angel Feather"
+            items:
+              options:
+                - "Demon Horn"
+                - "Angel Feather"
+            total_picks: 1
+            total_wins: 1
+            win_rate_percentage: 100.0
+            avg_duration_sec: 1702.0
+          - choice_name: "Fire Sword"
+            items:
+              options:
+                - "Fire Sword"
+                - "Magic Ball"
+                - "Spoon"
+            total_picks: 4
+            total_wins: 3
+            win_rate_percentage: 75.0
+            avg_duration_sec: 1395.0
   400:
     description: Client Side Error
     schema:
