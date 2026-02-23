@@ -250,3 +250,125 @@ def get_choices_stats():
         ), 400
 
     return jsonify({"choices_stats": choices_stats}), 200
+
+
+@Events.route("/boss/insert", methods=["POST"])
+@swag_from("docs/insert_boss.yml")
+def insert_boss():
+    data = request.get_json()
+
+    # Required params
+    boss_name = data.get("boss_name")
+    game_id = data.get("game_id")
+
+    # Optional param
+    metadata = data.get("metadata")
+
+    validate_data(["boss_name", "game_id"], data)
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO boss
+                    (boss_name,game_id,metadata)
+                    VALUES
+                    (%s,%s,%s);
+                    """,
+                    (boss_name, game_id, Json(metadata)),
+                )
+                conn.commit()
+
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify({"message": "Boss inserted successfully"}), 200
+
+
+@Events.route("/boss/summary/insert", methods=["POST"])
+@swag_from("docs/insert_boss_summary.yml")
+def insert_boss_summary():
+    data = request.get_json() or {}
+
+    # Required params
+    game_id = data.get("game_id")
+    run_id = data.get("run_id")
+    boss_seq = data.get("boss_seq")
+    boss_name = data.get("boss_name")
+    entered_at = data.get("entered_at")
+    updated_at = data.get("updated_at")
+
+    # Optional params
+    stage_index = data.get("stage_index")
+    stage_id = data.get("stage_id")
+    defeated_at = data.get("defeated_at")
+    duration_ms = data.get("duration_ms")
+    defeated = data.get("defeated")
+    damage_taken_in_boss = data.get("damage_taken_in_boss")
+
+    validate_data(
+        ["game_id", "run_id", "boss_seq", "boss_name", "entered_at", "updated_at"],
+        data,
+    )
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO boss_summary
+                    (
+                        game_id,
+                        run_id,
+                        boss_seq,
+                        stage_index,
+                        stage_id,
+                        boss_name,
+                        entered_at,
+                        defeated_at,
+                        duration_ms,
+                        defeated,
+                        damage_taken_in_boss,
+                        updated_at
+                    )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    );
+                    """,
+                    (
+                        game_id,
+                        run_id,
+                        boss_seq,
+                        stage_index,
+                        stage_id,
+                        boss_name,
+                        entered_at,
+                        defeated_at,
+                        duration_ms,
+                        defeated,
+                        damage_taken_in_boss,
+                        updated_at,
+                    ),
+                )
+                conn.commit()
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify({"message": "Boss summary inserted successfully"}), 200

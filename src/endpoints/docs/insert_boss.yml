@@ -1,0 +1,51 @@
+tags:
+  - Bosses
+summary: Insert a new boss
+description: Adds a new boss record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - boss_name
+        - game_id
+      properties:
+        boss_name:
+          type: string
+          example: "Hydra"
+          description: Name of the boss.
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        metadata:
+          type: object
+          example:
+            phase: 2
+            element: "poison"
+          description: Optional metadata for the boss.
+responses:
+  200:
+    description: Boss inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Boss inserted successfully"
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "duplicate key value violates unique constraint..."
+        type:
+          type: string
+          example: "UniqueViolation"
