@@ -1,0 +1,60 @@
+tags:
+  - Deaths
+summary: Get death events
+description: Returns death event details for a given game, filtered by game version.
+parameters:
+  - in: query
+    name: game_id
+    required: true
+    type: string
+    example: "G-12345"
+    description: Unique identifier for the game.
+  - in: query
+    name: game_version
+    required: true
+    type: string
+    example: "1.0.5"
+    description: Game version identifier to filter runs.
+responses:
+  200:
+    description: Death events retrieved successfully
+    schema:
+      type: object
+      properties:
+        death_events:
+          type: array
+          items:
+            type: object
+            properties:
+              level_index:
+                type: integer
+                format: int32
+                example: 3
+              room_index:
+                type: integer
+                format: int32
+                example: 12
+              damage_taken_in_boss:
+                type: integer
+                format: int32
+                example: 140
+              upgrade_snapshot:
+                type: object
+                example:
+                  upgrades:
+                    - "Fire Sword"
+                    - "Magic Ball"
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "invalid input syntax for type uuid"
+        type:
+          type: string
+          example: "InvalidTextRepresentation"

@@ -422,3 +422,142 @@ def get_bosses():
             ]
         }
     ), 200
+
+
+@Events.route("/death", methods=["GET"])
+@swag_from("docs/get_death.yml")
+def get_deaths():
+    args = request.args
+
+    game_id = args.get("game_id")
+    game_version = args.get("game_version")
+
+    validate_data(["game_id", "game_version"], args)
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                      df.level_index,df.room_index,rs.damage_taken_in_room,df.upgrades_snapshot
+                    FROM
+                      death_fact df
+                    JOIN
+                      room_summary rs
+                    ON
+                      df.game_id = rs.game_id AND df.run_id = rs.run_id
+                    JOIN
+                      run r
+                    ON
+                      r.game_id = df.game_id AND r.run_id = df.run_id
+                    WHERE rs.game_id = %s AND r.game_version = %s;
+                    """,
+                    (game_id, game_version),
+                )
+                rows = cur.fetchall()
+
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify(
+        {
+            "death_events": [
+                {
+                    "level_index": row[0],
+                    "room_index": row[1],
+                    "damage_taken_in_boss": row[2],
+                    "upgrade_snapshot": row[3],
+                }
+                for row in rows
+            ]
+        }
+    ), 200
+
+
+@Events.route("/death/insert", methods=["POST"])
+@swag_from("docs/insert_death.yml")
+def insert_death():
+    data = request.get_json() or {}
+
+    # Required params
+    game_id = data.get("game_id")
+    run_id = data.get("run_id")
+    occurred_at = data.get("occurred_at")
+    updated_at = data.get("updated_at")
+    event_id = data.get("event_id")
+
+    validate_data(
+        ["game_id", "run_id", "occurred_at", "updated_at", "event_id"],
+        data,
+    )
+
+    # Optional params
+    level_index = data.get("level_index")
+    level_name = data.get("level_name")
+    room_index = data.get("room_index")
+    hp = data.get("hp")
+    max_hp = data.get("max_hp")
+    upgrades_snapshot = data.get("upgrades_snapshot")
+
+    try:
+        with DatabaseConnection.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO death_fact
+                    (
+                        game_id,
+                        run_id,
+                        occurred_at,
+                        level_index,
+                        level_name,
+                        room_index,
+                        hp,
+                        max_hp,
+                        upgrades_snapshot,
+                        updated_at,
+                        event_id
+                    )
+                    VALUES
+                    (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                    RETURNING death_fact_id;
+                    """,
+                    (
+                        game_id,
+                        run_id,
+                        occurred_at,
+                        level_index,
+                        level_name,
+                        room_index,
+                        hp,
+                        max_hp,
+                        Json(upgrades_snapshot),
+                        updated_at,
+                        event_id,
+                    ),
+                )
+                death_fact_id = int(cur.fetchone()[0])
+                conn.commit()
+    except Exception as e:
+        return jsonify(
+            {"error": "Client Side Error", "message": str(e), "type": type(e).__name__}
+        ), 400
+
+    return jsonify(
+        {"message": "Death inserted successfully", "death_fact_id": death_fact_id}
+    ), 200

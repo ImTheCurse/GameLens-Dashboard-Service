@@ -33,17 +33,18 @@ CREATE TABLE "choice_fact" (
 	"event_id" integer NOT NULL
 );
 CREATE TABLE "death_fact" (
-	"death_fact_id" varchar PRIMARY KEY,
+	"death_fact_id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "death_fact_death_fact_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"game_id" varchar NOT NULL,
 	"run_id" varchar NOT NULL,
 	"occurred_at" timestamp NOT NULL,
-	"stage_index" integer,
-	"stage_id" varchar,
+	"level_index" integer,
+	"level_name" varchar,
 	"room_index" integer,
 	"hp" integer,
 	"max_hp" integer,
 	"upgrades_snapshot" json,
-	"updated_at" timestamp NOT NULL
+	"updated_at" timestamp NOT NULL,
+	"event_id" integer NOT NULL CONSTRAINT "death_fact_event_id_key" UNIQUE
 );
 CREATE TABLE "developer" (
 	"developer_id" varchar PRIMARY KEY,
@@ -182,10 +183,11 @@ CREATE INDEX "choice_fact_game_id_selected_upgrade_id_idx" ON "choice_fact" ("ga
 CREATE UNIQUE INDEX "choice_fact_pkey" ON "choice_fact" ("choice_fact_id");
 CREATE INDEX "choice_fact_run_id_occurred_at_idx" ON "choice_fact" ("run_id","occurred_at");
 CREATE INDEX "choice_fact_stage_id_idx" ON "choice_fact" ("stage_id");
+CREATE UNIQUE INDEX "death_fact_event_id_key" ON "death_fact" ("event_id");
 CREATE INDEX "death_fact_game_id_occurred_at_idx" ON "death_fact" ("game_id","occurred_at");
 CREATE UNIQUE INDEX "death_fact_pkey" ON "death_fact" ("death_fact_id");
 CREATE INDEX "death_fact_run_id_occurred_at_idx" ON "death_fact" ("run_id","occurred_at");
-CREATE INDEX "death_fact_stage_id_idx" ON "death_fact" ("stage_id");
+CREATE INDEX "death_fact_stage_id_idx" ON "death_fact" ("level_name");
 CREATE UNIQUE INDEX "developer_email_key" ON "developer" ("email");
 CREATE UNIQUE INDEX "developer_pkey" ON "developer" ("developer_id");
 CREATE INDEX "developer_game_game_id_idx" ON "developer_game" ("game_id");
@@ -226,9 +228,10 @@ ALTER TABLE "choice_fact" ADD CONSTRAINT "choice_fact_event_id_fkey" FOREIGN KEY
 ALTER TABLE "choice_fact" ADD CONSTRAINT "choice_fact_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("game_id");
 ALTER TABLE "choice_fact" ADD CONSTRAINT "choice_fact_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "run"("run_id");
 ALTER TABLE "choice_fact" ADD CONSTRAINT "choice_fact_stage_id_fkey" FOREIGN KEY ("stage_id") REFERENCES "stage"("stage_id");
+ALTER TABLE "death_fact" ADD CONSTRAINT "death_fact_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "event"("event_id");
 ALTER TABLE "death_fact" ADD CONSTRAINT "death_fact_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("game_id");
 ALTER TABLE "death_fact" ADD CONSTRAINT "death_fact_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "run"("run_id");
-ALTER TABLE "death_fact" ADD CONSTRAINT "death_fact_stage_id_fkey" FOREIGN KEY ("stage_id") REFERENCES "stage"("stage_id");
+ALTER TABLE "death_fact" ADD CONSTRAINT "death_fact_stage_id_fkey" FOREIGN KEY ("level_name") REFERENCES "stage"("stage_id");
 ALTER TABLE "developer_game" ADD CONSTRAINT "developer_game_developer_id_fkey" FOREIGN KEY ("developer_id") REFERENCES "developer"("developer_id");
 ALTER TABLE "developer_game" ADD CONSTRAINT "developer_game_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "game"("game_id");
 ALTER TABLE "event" ADD CONSTRAINT "event_event_type_id_fkey" FOREIGN KEY ("event_type_id") REFERENCES "event_type"("id");

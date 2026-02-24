@@ -1,0 +1,98 @@
+tags:
+  - Deaths
+summary: Insert a new death event
+description: Adds a new death_fact record into the database.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      required:
+        - game_id
+        - run_id
+        - occurred_at
+        - updated_at
+        - event_id
+      properties:
+        event_id:
+          type: integer
+          format: int32
+          example: 42
+          description: Foreign key to event.
+        game_id:
+          type: string
+          example: "G-12345"
+          description: Unique identifier for the game.
+        run_id:
+          type: string
+          example: "R-54321"
+          description: Unique identifier for the run.
+        occurred_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:00Z"
+          description: Timestamp when the death occurred.
+        level_index:
+          type: integer
+          format: int32
+          example: 3
+          description: Optional level index within the run.
+        level_name:
+          type: string
+          example: "S-001"
+          description: Optional stage ID (level name).
+        room_index:
+          type: integer
+          format: int32
+          example: 12
+          description: Optional room index within the level.
+        hp:
+          type: integer
+          format: int32
+          example: 0
+          description: Player HP at time of death.
+        max_hp:
+          type: integer
+          format: int32
+          example: 100
+          description: Player max HP at time of death.
+        upgrades_snapshot:
+          type: object
+          example:
+            upgrades:
+              - "Fire Sword"
+              - "Magic Ball"
+          description: Optional snapshot of upgrades at time of death.
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-10-27T10:05:02Z"
+          description: Timestamp when the record was updated.
+responses:
+  200:
+    description: Death inserted successfully
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Death inserted successfully"
+        death_fact_id:
+          type: integer
+          format: int32
+          example: 12345
+  400:
+    description: Client Side Error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Client Side Error"
+        message:
+          type: string
+          example: "duplicate key value violates unique constraint..."
+        type:
+          type: string
+          example: "UniqueViolation"
